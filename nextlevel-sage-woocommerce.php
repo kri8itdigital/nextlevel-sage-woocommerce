@@ -15,7 +15,7 @@
  * @wordpress-plugin
  * Plugin Name:       NEXTLEVEL Sage for Woocommerce
  * Plugin URI:        https://www.kri8it.com
- * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
+ * Description:       Connects to NEXTLEVEL custom Sage Accounting Systems
  * Version:           1.0.0
  * Author:            Hilton Moore
  * Author URI:        https://www.kri8it.com

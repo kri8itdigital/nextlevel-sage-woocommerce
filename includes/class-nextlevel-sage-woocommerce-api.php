@@ -118,6 +118,8 @@ class Nextlevel_Sage_Woocommerce_API{
 	*/
 	public static function UPDATESTOCK($_DATA){
 
+		$_ACTION = get_option('nextlevel_sage_woocommerce_backorders');
+
 		foreach($_DATA as $_ITEM):
 
 			$_PRODUCT = wc_get_product_id_by_sku($_ITEM['Code']);
@@ -125,24 +127,28 @@ class Nextlevel_Sage_Woocommerce_API{
 			if($_PRODUCT > 0):
 
 				$_PRODUCT = wc_get_product($_PRODUCT);
-
-				/*
+				
 				$_PROD->set_stock_quantity($_ITEM['QtyOnHand']);
 
 				if ($_ITEM['QtyOnHand'] > 0):
+
 					$_PROD->set_stock_status('instock');
+					$_PROD->set_backorders('no');
+					
 				else:
 					$_PROD->set_stock_status('outofstock');
+
+					if($_ACTION == 'yes'):
+						$_PROD->set_backorders('notify');
+					else:
+						$_PROD->set_backorders('no');
+					endif;
 				endif;	
 
+
 				$_PROD->save();
-				*/
 
-				//echo 'FOUND: '.$_ITEM['Code'].' -- '.$_PRODUCT->get_id().' -- '.$_ITEM['QtyOnHand'].'<br/>';
-
-			else:
-
-				//echo 'NOT: '.$_ITEM['Code'].' --  -- '.$_ITEM['QtyOnHand'].'<br/>';
+				
 			endif;
 
 		endforeach;
@@ -158,33 +164,58 @@ class Nextlevel_Sage_Woocommerce_API{
 	*/
 	public static function UPDATEPRICE($_DATA){
 
+		$_ACTION = get_option('nextlevel_sage_woocommerce_price_action');
+
 		foreach($_DATA as $_ITEM):
 
-			$_PRODUCT = wc_get_product_id_by_sku($_ITEM['Code']);
+			$_ID = wc_get_product_id_by_sku($_ITEM['Code']);
 
-			if($_PRODUCT > 0):
+			if($_ID > 0):
 
-				$_PRODUCT = wc_get_product($_PRODUCT);
+				$_PROD 	= wc_get_product($_ID);
+				$_OBJ 		= get_post($_ID);
 
 				if($_ITEM['RetailIncl'] > 0):
-
-					/*
+					
 					$_PROD->set_price($_ITEM['RetailIncl']);
 					$_PROD->set_regular_price($_ITEM['RetailIncl']);
 
-					$_PROD->save();
-					*/
+					if($_OBJ->post_status != 'publish'):
+						wp_update_post(array('ID' => $_ID, 'post_status' => 'publish'));
+					endif;
+
+					if($_PROD->get_catalog_visibility() != 'visible'):
+						$_PROD->set_catalog_visibility('visible');
+					endif;
+					
 				else:
 
-					// DO WHAT?
+					switch($_ACTION):
+
+						case "draft":
+
+							wp_update_post(array('ID' => $_ID, 'post_status' => 'draft'));
+
+							$_PROD->set_catalog_visibility('visible');
+
+						break;
+
+						case "hide":
+
+							if($_OBJ->post_status != 'publish'):
+								wp_update_post(array('ID' => $_ID, 'post_status' => 'publish'));
+							endif;
+
+							$_PROD->set_catalog_visibility('hidden');
+
+						break;
+
+					endswitch;
 
 				endif;
 
-				//echo 'FOUND: '.$_ITEM['Code'].' -- '.$_PRODUCT->get_id().' -- '.$_ITEM['RetailIncl'].'<br/>';
+				$_PROD->save();
 
-			else:
-
-				//echo 'NOT: '.$_ITEM['Code'].' --  -- '.$_ITEM['RetailIncl'].'<br/>';
 			endif;
 
 		endforeach;
