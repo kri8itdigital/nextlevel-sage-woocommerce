@@ -18,6 +18,7 @@ class Nextlevel_Sage_Woocommerce_API{
 
 		$_ARGS = array(
 		    'method' => 'GET',
+		    'timeout' => 60000,
 		    'headers' => array(
 		        'Content-Type' => 'application/json',
 		        'Accept' => 'application/json'
@@ -63,6 +64,8 @@ class Nextlevel_Sage_Woocommerce_API{
 	*/
 	public static function STOCK(){
 
+		set_time_limit(0);
+
 		update_option('nextlevel_sage_woocommerce_cron_stock_running', 'yes');
 
 		$_URL = get_option('nextlevel_sage_woocommerce_endpoint_stock');
@@ -89,6 +92,8 @@ class Nextlevel_Sage_Woocommerce_API{
 	DO PRICE UPDATE
 	*/
 	public static function PRICE(){
+
+		set_time_limit(0);
 
 		update_option('nextlevel_sage_woocommerce_cron_prices_running', 'yes');
 
@@ -126,11 +131,12 @@ class Nextlevel_Sage_Woocommerce_API{
 
 			if($_PRODUCT > 0):
 
-				$_PRODUCT = wc_get_product($_PRODUCT);
-				
-				$_PROD->set_stock_quantity($_ITEM['QtyOnHand']);
+				$_PROD = wc_get_product($_PRODUCT);
+				$_PROD->set_manage_stock(true);
+				$_PROD->save();
+				$_PROD->set_stock_quantity((int)trim($_ITEM['QtyOnHand']));
 
-				if ($_ITEM['QtyOnHand'] > 0):
+				if ((int)trim($_ITEM['QtyOnHand'] > 0)):
 
 					$_PROD->set_stock_status('instock');
 					$_PROD->set_backorders('no');
@@ -164,8 +170,6 @@ class Nextlevel_Sage_Woocommerce_API{
 	*/
 	public static function UPDATEPRICE($_DATA){
 
-		$_ACTION = get_option('nextlevel_sage_woocommerce_price_action');
-
 		foreach($_DATA as $_ITEM):
 
 			$_ID = wc_get_product_id_by_sku($_ITEM['Code']);
@@ -173,44 +177,29 @@ class Nextlevel_Sage_Woocommerce_API{
 			if($_ID > 0):
 
 				$_PROD 	= wc_get_product($_ID);
-				$_OBJ 		= get_post($_ID);
+				$_OBJ	= get_post($_ID);
 
-				if($_ITEM['RetailIncl'] > 0):
+				if((float)trim($_ITEM['RetailIncl']) > 0):
 					
-					$_PROD->set_price($_ITEM['RetailIncl']);
-					$_PROD->set_regular_price($_ITEM['RetailIncl']);
-
-					if($_OBJ->post_status != 'publish'):
-						wp_update_post(array('ID' => $_ID, 'post_status' => 'publish'));
-					endif;
+					$_PROD->set_price((float)trim($_ITEM['RetailIncl']));
+					$_PROD->set_regular_price((float)trim($_ITEM['RetailIncl']));
 
 					if($_PROD->get_catalog_visibility() != 'visible'):
 						$_PROD->set_catalog_visibility('visible');
 					endif;
+
+					$_PROD->set_status('publish');
 					
 				else:
 
-					switch($_ACTION):
+					$_PROD->set_price('');
+					$_PROD->set_regular_price('');
 
-						case "draft":
+					$_PROD->set_status('private');
 
-							wp_update_post(array('ID' => $_ID, 'post_status' => 'draft'));
-
-							$_PROD->set_catalog_visibility('visible');
-
-						break;
-
-						case "hide":
-
-							if($_OBJ->post_status != 'publish'):
-								wp_update_post(array('ID' => $_ID, 'post_status' => 'publish'));
-							endif;
-
-							$_PROD->set_catalog_visibility('hidden');
-
-						break;
-
-					endswitch;
+					if($_PROD->get_catalog_visibility() == 'visible'):
+						$_PROD->set_catalog_visibility('hidden');
+					endif;
 
 				endif;
 

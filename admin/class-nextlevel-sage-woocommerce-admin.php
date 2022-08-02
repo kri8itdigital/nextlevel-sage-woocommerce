@@ -126,7 +126,7 @@ class Nextlevel_Sage_Woocommerce_Admin {
 	INCREASE TIMEOUT FOR CALLS
 	*/
 	public function http_request_timeout(){
-		return 600;
+		return 600000;
 	}
 
 
@@ -180,11 +180,8 @@ class Nextlevel_Sage_Woocommerce_Admin {
 	*/
 	public function nextlevel_sage_woocommerce_cron_prices(){
 
-		if(!get_option('nextlevel_sage_woocommerce_cron_prices_running') || get_option('nextlevel_sage_woocommerce_cron_prices_running') == 'no'):
-
-			Nextlevel_Sage_Woocommerce_API::PRICE();
-
-		endif;
+		Nextlevel_Sage_Woocommerce_API::PRICE();
+		
 	}
 
 
@@ -196,11 +193,8 @@ class Nextlevel_Sage_Woocommerce_Admin {
 	*/
 	public function nextlevel_sage_woocommerce_cron_stock(){
 
-		if(!get_option('nextlevel_sage_woocommerce_cron_stock_running') || get_option('nextlevel_sage_woocommerce_cron_stock_running') == 'no'):
+		Nextlevel_Sage_Woocommerce_API::STOCK();
 
-			Nextlevel_Sage_Woocommerce_API::STOCK();
-
-		endif;
 	}
 
 }

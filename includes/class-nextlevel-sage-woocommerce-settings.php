@@ -59,16 +59,6 @@ class Nextlevel_Sage_Woocommerce_Settings extends WC_Settings_Page {
 				'type'          => 'checkbox'
 			),
 			array(
-				'title'         => __( 'Sage No Price Action', 'nextlevel-sage-woocommerce' ),
-				'id'            => 'nextlevel_sage_woocommerce_price_action',
-				'default' 		=> 'None',
-					'type' 		=> 'select',
-				'options'   	=> array(
-					'draft'		=> __( 'Set to Draft', 'nextlevel-sage-woocommerce' ),
-					'hide'	=> __( 'Hide From Catalog', 'nextlevel-sage-woocommerce' )
-				)
-			),
-			array(
 					'title' 	=> __('Time Interval', 'nextlevel-sage-woocommerce'),
 					'type' 		=> 'select',
 					'default' 	=> '',
